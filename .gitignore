@@ -1,0 +1,6 @@
+.vscode-server
+.env
+node_modules
+build
+dist
+out
