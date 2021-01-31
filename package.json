@@ -3,7 +3,10 @@
 	"displayName": "org-preview",
 	"description": "",
 	"publisher": "goodbaikin",
-	"repository": "https: //github.com/goodbaikin/VSC-Org-Preview",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/goodbaikin/VSC-Org-Preview.git"
+	},
 	"version": "0.0.1",
 	"engines": {
 		"vscode": "^1.52.0"
