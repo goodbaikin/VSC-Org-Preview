@@ -9,5 +9,7 @@ Org-preview uses docker image to export org files.
 - Docker
 - Docker image (goodbaikin/org2pdf)
 
-
+## Not implemented
+- LaTeX Math Equation Support
+- Image Support
 
