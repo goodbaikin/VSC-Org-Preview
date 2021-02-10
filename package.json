@@ -22,9 +22,56 @@
 		"commands": [
 			{
 				"command": "org-preview.start",
-				"title": "Preview Org file"
+				"title": "Display Preview in the next editor",
+				"category": "Org Preview"
 			}
-		]
+		],
+		"configuration": {
+			"type": "object",
+			"title": "Org Preview",
+			"properties": {
+				"org-preview.default.cursor": {
+					"markdownDescription": "The default cursol tool for preview.",
+					"type": "string",
+					"default": "select",
+					"enum": [
+						"select",
+						"hand"
+					]
+				},
+				"org-preview.default.scale": {
+					"markdownDescription": "The default zoom level for preview. Allowed values are `auto`, `page-actual`, `page-fit`, `page-width`, and 1-based scale values. (`1.0` means 100%)",
+					"type": "string",
+					"default": "auto",
+					"pattern": "^(\\d+(?:\\.\\d+)?|auto|page-actual|page-fit|page-width)$"
+				},
+				"org-preview.default.sidebar": {
+					"markdownDescription": "Show the sidebar on load. The default visiblity of sidebar for preview.",
+					"type": "boolean",
+					"default": false
+				},
+				"org-preview.default.scrollMode": {
+					"markdownDescription": "The default scroll mode for preview.",
+					"type": "string",
+					"default": "vertical",
+					"enum": [
+						"vertical",
+						"horizontal",
+						"wrapped"
+					]
+				},
+				"org-preview.default.spreadMode": {
+					"markdownDescription": "The default spread mode for preview.",
+					"type": "string",
+					"default": "none",
+					"enum": [
+						"none",
+						"odd",
+						"even"
+					]
+				}
+			}
+		}
 	},
 	"scripts": {
 		"vscode:prepublish": "yarn run package",
