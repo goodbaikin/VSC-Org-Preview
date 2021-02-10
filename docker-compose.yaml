@@ -12,6 +12,7 @@ services:
       - $SSH_AUTH_SOCK:$SSH_AUTH_SOCK
       - .:/workspace
       - /var/run/docker.sock:/var/run/docker.sock
+      - /tmp/test:/tmp/test
     
     
   

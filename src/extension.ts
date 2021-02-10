@@ -27,35 +27,32 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 async function updateWebView() {
-	let text = getEditorText();
-	if (text != "") {
-		panel.webview.html = await getConvertPromise(text);
-	}
-}
-
-function getEditorText() {
-	// if editor is null
 	let editor = vscode.window.activeTextEditor;
-	if (!editor) {
-		return "";
+	if (!editor) { return; }
+	editor!!;
+
+	let path = editor.document.fileName;
+	let index = path.lastIndexOf('/');
+	let fileName = path.slice(index + 1, undefined);
+	let dirPath = path.slice(undefined, index);
+	if (isOrgFile(fileName)) {
+		let stderr = await getConvertPromise(dirPath, fileName);
+		console.log(stderr);
 	}
 
-	// check file extension
-	let fileName = editor!!.document.fileName;
-	let ext = fileName.slice(fileName.lastIndexOf('.') + 1);
-	if (ext.toLowerCase() == "org") {
-		return editor.document.getText();
-	}
-
-	return "";
 }
 
-function getConvertPromise(orgStr: string) {
-	let emacs_cmd = `echo "${orgStr}"|emacs --batch -l /root/.emacs.d/init.el -f org-stdin-to-html-full`;
-	let cmd = 'docker run --rm -v $(pwd):/tmp -w /tmp goodbaikin/org2pdf bash -c \'' + emacs_cmd + '\'';
-	let promise = exec(cmd).then(({ stdout, stderr }) => {
-		return stdout;
-	});
 
+function isOrgFile(fileName: string) {
+	let index = fileName.lastIndexOf('.') + 1;
+	let ext = fileName.slice(index);
+	return ext.toLocaleLowerCase() === "org";
+}
+
+function getConvertPromise(dirPath: string, fileName: string) {
+	let cmd = `docker run --rm -v "${dirPath}":/tmp -w /tmp goodbaikin/org2pdf org2pdf "${fileName}"`;
+	let promise = exec(cmd).then(({ stdout, stderr }) => {
+		return stderr;
+	});
 	return promise;
 }
