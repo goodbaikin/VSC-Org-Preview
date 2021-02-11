@@ -1,61 +1,79 @@
 import * as vscode from 'vscode';
 import * as util from 'util';
 import * as child_process from 'child_process';
+import * as path from 'path';
+import { PdfPreview } from './previewer';
+
 
 const exec = util.promisify(child_process.exec);
-
-let panel: vscode.WebviewPanel;
 
 export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(
 		vscode.commands.registerCommand('org-preview.start', () => {
-			panel = vscode.window.createWebviewPanel(
-				'Org Preview',
-				'Org Preview',
+			const panel = vscode.window.createWebviewPanel(
+				'org-preview',
+				"Org Preview",
 				vscode.ViewColumn.Beside,
-				{}
+				{
+					enableFindWidget: false,
+					retainContextWhenHidden: true
+				}
 			);
-			updateWebView();
+			let filePath = vscode.window.activeTextEditor!!.document.uri.fsPath;
+			let dirname = path.dirname(filePath);
+			let name = path.parse(filePath).name;
+			let pdfPath = path.join(dirname, name + ".pdf");
+			let pdfUri = vscode.Uri.file(pdfPath);
+
+			exportOrgToPdf();
+			const preview = new PdfPreview(
+				context.extensionUri,
+				pdfUri,
+				panel
+			);
 		})
 	);
 
 	context.subscriptions.push(
 		vscode.workspace.onDidSaveTextDocument(e => {
-			updateWebView();
+			exportOrgToPdf();
 		})
 	);
 }
 
-async function updateWebView() {
-	let text = getEditorText();
-	if (text != "") {
-		panel.webview.html = await getConvertPromise(text);
-	}
-}
 
-function getEditorText() {
-	// if editor is null
+async function exportOrgToPdf() {
 	let editor = vscode.window.activeTextEditor;
-	if (!editor) {
-		return "";
-	}
+	if (!editor) { return; }
+	editor!!;
 
-	// check file extension
-	let fileName = editor!!.document.fileName;
-	let ext = fileName.slice(fileName.lastIndexOf('.') + 1);
-	if (ext.toLowerCase() == "org") {
-		return editor.document.getText();
+	let pathStr = editor.document.fileName;
+	let extName = path.extname(pathStr);
+	let dirPath = path.dirname(pathStr);
+	let fileName = path.basename(pathStr);
+	if (isOrgFile(extName)) {
+		let result = await getExportPromise(dirPath, fileName);
+		console.log(result);
 	}
-
-	return "";
 }
 
-function getConvertPromise(orgStr: string) {
-	let emacs_cmd = `echo "${orgStr}"|emacs --batch -l /root/.emacs.d/init.el -f org-stdin-to-html-full`;
-	let cmd = 'docker run --rm -v $(pwd):/tmp -w /tmp goodbaikin/org2pdf bash -c \'' + emacs_cmd + '\'';
-	let promise = exec(cmd).then(({ stdout, stderr }) => {
-		return stdout;
-	});
 
+function isOrgFile(ext: string) {
+	return ext.toLowerCase() === ".org";
+}
+
+function getExportPromise(dirPath: string, fileName: string) {
+	const config = vscode.workspace.getConfiguration('org-preview');
+	let useNative = config.get('useNative') as boolean
+	let cmd = useNative ?
+		`emacs --batch --load="~/.emacs.d/init.el" --file=${path.join(dirPath, fileName)} --eval '(org-latex-export-to-pdf)'` :
+		`docker run --rm -v "${dirPath}":/tmp -w /tmp goodbaikin/org2pdf org2pdf "${fileName}"`;
+	let promise = exec(cmd).then(({ stdout, stderr }) => {
+		return stdout + "\n" + stderr;
+	});
 	return promise;
 }
+
+
+
+export function deactivate() { }
