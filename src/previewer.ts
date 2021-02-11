@@ -135,6 +135,7 @@ export class PdfPreview extends Disposable {
     )}">
 <link rel="stylesheet" href="${resolveAsUri('lib', 'web', 'viewer.css')}">
 <link rel="stylesheet" href="${resolveAsUri('lib', 'pdf.css')}">
+<script type="text/javascript">window.cMapUrl="${resolveAsUri('lib', 'web', 'cmaps')}/"</script>
 <script src="${resolveAsUri('lib', 'build', 'pdf.js')}"></script>
 <script src="${resolveAsUri('lib', 'build', 'pdf.worker.js')}"></script>
 <script src="${resolveAsUri('lib', 'web', 'viewer.js')}"></script>
