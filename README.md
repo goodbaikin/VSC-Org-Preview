@@ -1,15 +1,15 @@
-# org-preview README
+# Org-preview README
 Preview extension for org file
 
+![](images/sample.png)
+
 ## Features
-Org-preview exports active org file to html for every saving. Please do auto-save setting for the live preview.
+- Export active org file to pdf for every saving
+- Use docker to export on default(You can use natively installed emacs of course)
+- Use PDF.js for rendering
+
 
 ## Requirements
-Org-preview uses docker image to export org files.
-- Docker
-- Docker image (goodbaikin/org2pdf)
+- Docker or Emacs
 
-## Not implemented
-- LaTeX Math Equation Support
-- Image Support
 
