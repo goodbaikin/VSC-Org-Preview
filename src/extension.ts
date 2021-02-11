@@ -63,7 +63,11 @@ function isOrgFile(ext: string) {
 }
 
 function getExportPromise(dirPath: string, fileName: string) {
-	let cmd = `docker run --rm -v "${dirPath}":/tmp -w /tmp goodbaikin/org2pdf org2pdf "${fileName}"`;
+	const config = vscode.workspace.getConfiguration('org-preview');
+	let useNative = config.get('useNative') as boolean
+	let cmd = useNative ?
+		`emacs --batch --load="~/.emacs.d/init.el" --file=${path.join(dirPath, fileName)} --eval '(org-latex-export-to-pdf)'` :
+		`docker run --rm -v "${dirPath}":/tmp -w /tmp goodbaikin/org2pdf org2pdf "${fileName}"`;
 	let promise = exec(cmd).then(({ stdout, stderr }) => {
 		return stdout + "\n" + stderr;
 	});

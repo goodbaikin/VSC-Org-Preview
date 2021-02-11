@@ -30,6 +30,11 @@
 			"type": "object",
 			"title": "Org Preview",
 			"properties": {
+				"org-preview.useNative": {
+					"markdownDescription": "Use installed native emacs or not. If false, use docker image goodbaikin/org2pdf",
+					"type": "boolean",
+					"default": false
+				},
 				"org-preview.default.cursor": {
 					"markdownDescription": "The default cursol tool for preview.",
 					"type": "string",
