@@ -5,9 +5,12 @@
 	"publisher": "goodbaikin",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/goodbaikin/VSC-Org-Preview.git"
+		"url": "https://github.com/goodbaikin/VSC-Org-Preview"
 	},
-	"version": "0.0.1",
+	"bugs": {
+		"url": "https://github.com/goodbaikin/VSC-Org-Preview/issues"
+	},
+	"version": "1.0.0",
 	"engines": {
 		"vscode": "^1.52.0"
 	},

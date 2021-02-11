@@ -1,9 +1,10 @@
 # Change Log
 
-All notable changes to the "org-preview" extension will be documented in this file.
+## 1.0.0
+- Official Release
+- Changed to PDF based rendering(Using PDF.js)
 
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
-
-## [Unreleased]
-
+## 0.01
 - Initial release
+- Display exported html for every saving
+- Image and Math Equation not supported
