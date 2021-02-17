@@ -22,10 +22,7 @@
 	// Add the IDs of extensions you want installed when the container is created.
 	"extensions": [
 		"eamodio.tsl-problem-matcher",
-		"dbaeumer.vscode-eslint",
-		"mhutchie.git-graph",
-		"eamodio.gitlens",
-		"donjayamanne.githistory"
+		"dbaeumer.vscode-eslint"
 	]
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
