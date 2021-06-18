@@ -19,10 +19,12 @@ export function activate(context: vscode.ExtensionContext) {
 					retainContextWhenHidden: true
 				}
 			);
+			const pdfDir = "org-mode.tmp";
+
 			let filePath = vscode.window.activeTextEditor!!.document.uri.fsPath;
 			let dirname = path.dirname(filePath);
 			let name = path.parse(filePath).name;
-			let pdfPath = path.join(dirname, name + ".pdf");
+			let pdfPath = path.join(dirname, pdfDir, name + ".pdf");
 			let pdfUri = vscode.Uri.file(pdfPath);
 
 			exportOrgToPdf();
