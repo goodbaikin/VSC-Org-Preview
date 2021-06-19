@@ -4,9 +4,12 @@ Preview extension for org file
 ![](images/sample.png)
 
 ## Features
-- Export active org file to pdf for every saving
-- Use docker to export on default(You can use natively installed emacs of course)
-- Use PDF.js for rendering
+- Exporting active org file to pdf for every saving
+- Using docker for exporting on default
+- If using docker, Building objects are  exported on CWD/org-mode.tmp
+- You can also use a native emacs (need to enable from settings)
+- Using PDF.js for rendering
+
 
 
 ## Requirements
