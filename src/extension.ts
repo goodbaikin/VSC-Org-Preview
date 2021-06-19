@@ -51,16 +51,37 @@ async function exportOrgToPdf() {
 	const extName = path.extname(pathStr);
 	const dirPath = path.dirname(pathStr);
 	const fileName = path.basename(pathStr);
+
+	let location: vscode.ProgressLocation;
+	let message: string;
+	try {
+		await vscode.workspace.fs.stat(preview.resource);
+		location = vscode.ProgressLocation.Window;
+		message = "Building...";
+	} catch {
+		location = vscode.ProgressLocation.Notification;
+		message = "Building a new PDF ...";
+	}
+
 	if (isOrgFile(extName)) {
-		const result = await getExportPromise(dirPath, fileName);
-		if (filePath !== pathStr) {
-			const resource = getPDFUri(pathStr);
-			preview.loadOtherFile(resource);
-			filePath = pathStr;
-		} else {
-			preview.reload();
-		}
-		console.log(result);
+		let result: string;
+		vscode.window.withProgress({
+			location: location
+		}, async (progress) => {
+			progress.report({
+				message: message
+			});
+
+			result = await getExportPromise(dirPath, fileName);
+			if (filePath !== pathStr) {
+				const resource = getPDFUri(pathStr);
+				preview.loadOtherFile(resource);
+				filePath = pathStr;
+			} else {
+				preview.reload();
+			}
+			parseResult(result);
+		});
 	}
 }
 
@@ -84,13 +105,23 @@ function getExportPromise(dirPath: string, fileName: string): Promise<string> {
 	const useNative = config.get('useNative') as boolean;
 	const cmd = useNative ?
 		`emacs --batch --load="~/.emacs.d/init.el" --file=${path.join(dirPath, fileName)} --eval '(org-latex-export-to-pdf)'` :
-		`docker run --rm -v "${dirPath}":/tmp -w /tmp goodbaikin/org2pdf org2pdf "${fileName}"`;
+		`docker run  --rm -v "${dirPath}":/tmp -w /tmp goodbaikin/org2pdf org2pdf "${fileName}"`;
 	const promise = exec(cmd).then(({ stdout, stderr }) => {
 		return stdout + "\n" + stderr;
+	}).catch((reason) => {
+		return reason.toString();
 	});
 	return promise;
 }
 
+function parseResult(result: string) {
+	console.log(result);
+	if (result.match(/PDF file produced./)) {
+		return;
+	}
+
+	vscode.window.showErrorMessage(result);
+}
 
 
 export function deactivate() { }

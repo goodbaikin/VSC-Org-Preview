@@ -13,7 +13,7 @@ export class PdfPreview extends Disposable {
 
   constructor(
     private readonly extensionRoot: vscode.Uri,
-    private resource: vscode.Uri,
+    public resource: vscode.Uri,
     private readonly webviewEditor: vscode.WebviewPanel
   ) {
     super();
