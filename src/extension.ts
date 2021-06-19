@@ -6,10 +6,15 @@ import { PdfPreview } from './previewer';
 
 
 const exec = util.promisify(child_process.exec);
+let preview: PdfPreview;
+let filePath: string;
 
 export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(
 		vscode.commands.registerCommand('org-preview.start', () => {
+			let onSaveEvent = vscode.workspace.onDidSaveTextDocument(e => {
+				exportOrgToPdf();
+			});
 			const panel = vscode.window.createWebviewPanel(
 				'org-preview',
 				"Org Preview",
@@ -19,58 +24,68 @@ export function activate(context: vscode.ExtensionContext) {
 					retainContextWhenHidden: true
 				}
 			);
-			const pdfDir = "org-mode.tmp";
+			panel.onDidDispose(() => {
+				onSaveEvent.dispose();
+			});
 
-			let filePath = vscode.window.activeTextEditor!!.document.uri.fsPath;
-			let dirname = path.dirname(filePath);
-			let name = path.parse(filePath).name;
-			let pdfPath = path.join(dirname, pdfDir, name + ".pdf");
-			let pdfUri = vscode.Uri.file(pdfPath);
+			filePath = vscode.window.activeTextEditor!!.document.uri.fsPath;
+			const pdfUri = getPDFUri(filePath);
 
 			exportOrgToPdf();
-			const preview = new PdfPreview(
+			preview = new PdfPreview(
 				context.extensionUri,
 				pdfUri,
 				panel
 			);
 		})
 	);
-
-	context.subscriptions.push(
-		vscode.workspace.onDidSaveTextDocument(e => {
-			exportOrgToPdf();
-		})
-	);
 }
 
 
 async function exportOrgToPdf() {
-	let editor = vscode.window.activeTextEditor;
+	const editor = vscode.window.activeTextEditor;
 	if (!editor) { return; }
 	editor!!;
 
-	let pathStr = editor.document.fileName;
-	let extName = path.extname(pathStr);
-	let dirPath = path.dirname(pathStr);
-	let fileName = path.basename(pathStr);
+	const pathStr = editor.document.fileName;
+	const extName = path.extname(pathStr);
+	const dirPath = path.dirname(pathStr);
+	const fileName = path.basename(pathStr);
 	if (isOrgFile(extName)) {
-		let result = await getExportPromise(dirPath, fileName);
+		const result = await getExportPromise(dirPath, fileName);
+		if (filePath !== pathStr) {
+			const resource = getPDFUri(pathStr);
+			preview.loadOtherFile(resource);
+			filePath = pathStr;
+		} else {
+			preview.reload();
+		}
 		console.log(result);
 	}
 }
 
 
-function isOrgFile(ext: string) {
+function isOrgFile(ext: string): boolean {
 	return ext.toLowerCase() === ".org";
 }
 
-function getExportPromise(dirPath: string, fileName: string) {
+function getPDFUri(filePath: string): vscode.Uri {
+	const pdfDir = "org-mode.tmp";
+	const dirname = path.dirname(filePath);
+	const name = path.parse(filePath).name;
+	const pdfPath = path.join(dirname, pdfDir, name + ".pdf");
+	const pdfUri = vscode.Uri.file(pdfPath);
+
+	return pdfUri;
+}
+
+function getExportPromise(dirPath: string, fileName: string): Promise<string> {
 	const config = vscode.workspace.getConfiguration('org-preview');
-	let useNative = config.get('useNative') as boolean
-	let cmd = useNative ?
+	const useNative = config.get('useNative') as boolean;
+	const cmd = useNative ?
 		`emacs --batch --load="~/.emacs.d/init.el" --file=${path.join(dirPath, fileName)} --eval '(org-latex-export-to-pdf)'` :
 		`docker run --rm -v "${dirPath}":/tmp -w /tmp goodbaikin/org2pdf org2pdf "${fileName}"`;
-	let promise = exec(cmd).then(({ stdout, stderr }) => {
+	const promise = exec(cmd).then(({ stdout, stderr }) => {
 		return stdout + "\n" + stderr;
 	});
 	return promise;

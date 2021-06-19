@@ -13,7 +13,7 @@ export class PdfPreview extends Disposable {
 
   constructor(
     private readonly extensionRoot: vscode.Uri,
-    private readonly resource: vscode.Uri,
+    private resource: vscode.Uri,
     private readonly webviewEditor: vscode.WebviewPanel
   ) {
     super();
@@ -54,29 +54,25 @@ export class PdfPreview extends Disposable {
       })
     );
 
-    const watcher = this._register(
-      vscode.workspace.createFileSystemWatcher(resource.fsPath)
-    );
-    this._register(
-      watcher.onDidChange((e) => {
-        if (e.toString() === this.resource.toString()) {
-          this.reload();
-        }
-      })
-    );
-    this._register(
-      watcher.onDidDelete((e) => {
-        if (e.toString() === this.resource.toString()) {
-          this.webviewEditor.dispose();
-        }
-      })
-    );
-
     this.webviewEditor.webview.html = this.getWebviewContents();
     this.update();
   }
 
-  private reload(): void {
+  public loadOtherFile(resource: vscode.Uri) {
+    this.resource = resource;
+    const resourceRoot = resource.with({
+      path: resource.path.replace(/\/[^/]+?\.\w+$/, '/'),
+    });
+
+    this.webviewEditor.webview.options = {
+      enableScripts: true,
+      localResourceRoots: [resourceRoot, this.extensionRoot],
+    };
+
+    this.webviewEditor.webview.html = this.getWebviewContents();
+  }
+
+  public reload(): void {
     if (this._previewState !== 'Disposed') {
       this.webviewEditor.webview.postMessage({ type: 'reload' });
     }
